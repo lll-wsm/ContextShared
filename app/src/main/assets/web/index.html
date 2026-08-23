@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ContextShared - 极速跨端互联</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- 顶部状态栏 -->
+    <header class="app-header">
+        <div class="header-left">
+            <div class="logo">📱 ContextShared</div>
+            <div class="device-tag" id="deviceTag">Pixel 8</div>
+        </div>
+        <div class="header-right">
+            <div class="status-indicator connected" id="statusIndicator">
+                <span class="status-dot"></span>
+                <span class="status-text" id="statusText">已连接</span>
+            </div>
+            <div class="battery-tag" id="batteryTag">🔋 85%</div>
+        </div>
+    </header>
+
+    <main class="container">
+        <!-- 快速双向操作面板 -->
+        <div class="dashboard-grid">
+            <!-- 剪贴板与文本传输 -->
+            <section class="card clip-card">
+                <div class="card-header">
+                    <h2>📋 剪贴板同步</h2>
+                    <span class="badge" id="clipStatus">实时监听中</span>
+                </div>
+                <div class="card-body">
+                    <div class="latest-clip-box" id="latestClipBox">
+                        <div class="clip-label">手机端最近复制：</div>
+                        <div class="clip-content" id="phoneClipContent">暂无复制内容</div>
+                        <button class="btn btn-secondary btn-sm" id="btnCopyPhoneClip">复制到电脑</button>
+                    </div>
+
+                    <div class="send-text-box">
+                        <textarea id="textToSend" placeholder="输入要发送到手机的文本或网址... (按 Ctrl/Cmd+Enter 发送)"></textarea>
+                        <div class="btn-group">
+                            <button class="btn btn-primary" id="btnSendClipboard">📤 发送到手机剪贴板</button>
+                            <button class="btn btn-outline" id="btnOpenUrl">🌐 手机浏览器打开</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 文件拖拽上传 -->
+            <section class="card upload-card">
+                <div class="card-header">
+                    <h2>📁 文件极速快传</h2>
+                    <span class="badge">拖拽即传</span>
+                </div>
+                <div class="card-body">
+                    <div class="dropzone" id="dropzone">
+                        <div class="dropzone-icon">☁️</div>
+                        <div class="dropzone-text">将文件拖拽至此，或 <span class="dropzone-btn">点击选择文件</span></div>
+                        <input type="file" id="fileInput" multiple style="display: none;">
+                    </div>
+
+                    <div class="upload-progress-list" id="uploadList"></div>
+                </div>
+            </section>
+        </div>
+
+        <!-- 手机文件管理与浏览 -->
+        <section class="card files-section">
+            <div class="card-header">
+                <h2>📂 手机文件库</h2>
+                <div class="tab-group">
+                    <button class="tab-btn active" data-category="downloads">📥 下载/共享</button>
+                    <button class="tab-btn" data-category="photos">🖼 照片/相册</button>
+                    <button class="tab-btn" data-category="documents">📑 文档</button>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="file-grid" id="fileGrid">
+                    <div class="loading-spinner">加载中...</div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- PIN 码配对弹窗 -->
+    <div class="modal-overlay" id="pinModal">
+        <div class="modal-card">
+            <h3>🔒 设备配对验证</h3>
+            <p>请输入手机屏幕上显示的 4 位连接验证码：</p>
+            <div class="pin-inputs">
+                <input type="text" maxlength="4" id="pinCodeInput" placeholder="输入4位PIN码" autofocus>
+            </div>
+            <button class="btn btn-primary btn-block" id="btnSubmitPin">验证并连接</button>
+        </div>
+    </div>
+
+    <!-- 全屏拖拽提示遮罩 -->
+    <div class="drag-overlay" id="dragOverlay">
+        <div class="drag-overlay-content">
+            <div class="drag-icon">📥</div>
+            <h2>松开鼠标即可立即上传至手机</h2>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
