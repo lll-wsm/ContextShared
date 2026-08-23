@@ -49,6 +49,10 @@ public class AppHttpServer extends NanoHTTPD {
                 return serveAsset("web/style.css", "text/css; charset=utf-8");
             } else if ("/app.js".equals(uri)) {
                 return serveAsset("web/app.js", "application/javascript; charset=utf-8");
+            } else if ("/favicon.png".equals(uri) || "/favicon.ico".equals(uri)) {
+                return serveAsset("web/favicon.png", "image/png");
+            } else if ("/logo.png".equals(uri)) {
+                return serveAsset("web/logo.png", "image/png");
             }
         }
 

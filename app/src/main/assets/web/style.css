@@ -27,7 +27,8 @@ body { background-color: var(--bg-main); color: var(--text-main); min-height: 10
 
 .app-header { display: flex; justify-content: space-between; align-items: center; padding: 1rem 2rem; background: var(--bg-card); border-bottom: 1px solid var(--border); }
 .header-left, .header-right { display: flex; align-items: center; gap: 1rem; }
-.logo { font-size: 1.25rem; font-weight: 700; color: var(--primary); }
+.logo { font-size: 1.25rem; font-weight: 700; color: var(--primary); display: flex; align-items: center; gap: 0.6rem; }
+.logo-img { width: 32px; height: 32px; border-radius: 8px; object-fit: contain; }
 .device-tag, .battery-tag { padding: 0.25rem 0.75rem; background: var(--border); border-radius: 20px; font-size: 0.875rem; }
 
 .status-indicator { display: flex; align-items: center; gap: 0.5rem; font-size: 0.875rem; }
