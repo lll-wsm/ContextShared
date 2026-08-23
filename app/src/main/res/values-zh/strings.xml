@@ -1,16 +1,36 @@
 <resources>
     <string name="app_name">内容共享</string>
     <string name="app_title">内容共享</string>
-    <string name="server_stopped">⚪ 服务已停止</string>
-    <string name="server_running">🟢 局域网服务运行中</string>
+    <string name="app_subtitle">极速局域网跨端互联</string>
+    
+    <string name="server_stopped">服务已停止</string>
+    <string name="server_running">局域网服务运行中</string>
+    <string name="server_status_hint_off">开启开关后，电脑打开浏览器即可开始传输</string>
+    <string name="server_status_hint_on">同一局域网或热点下的任何设备均可直连</string>
+    
     <string name="browser_visit_hint">电脑浏览器访问以下网址：</string>
-    <string name="pairing_pin">配对 PIN 码：</string>
+    <string name="copy_url">复制</string>
+    <string name="url_copied">网址已复制到剪贴板</string>
+    <string name="share_url">分享</string>
+    <string name="share_title">连接到内容共享服务</string>
+    
+    <string name="qr_code_title">扫码极速直达</string>
+    <string name="qr_tap_hint">点击可全屏放大二维码</string>
+    <string name="pairing_pin">安全配对码</string>
     <string name="refresh">刷新</string>
-    <string name="transfer_logs">📊 传输日志</string>
-    <string name="waiting_connection">等待连接...</string>
     <string name="pin_refreshed">PIN 码已刷新: %s</string>
+    
+    <string name="network_info_title">当前网络: %s</string>
+    <string name="hotspot_hint">未连接 Wi-Fi？开启手机热点</string>
+    <string name="open_hotspot">热点设置</string>
+    
+    <string name="transfer_logs">传输动态</string>
+    <string name="waiting_connection">等待连接...</string>
+    <string name="clear_logs">清空</string>
+    
     <string name="permissions_granted">权限已授予</string>
     <string name="permissions_partially_denied">部分权限未授予，可能影响文件和通知功能</string>
+    
     <string name="service_notification_title">内容共享 互联服务运行中</string>
     <string name="service_notification_content">服务已就绪: %s</string>
     <string name="service_stop_action">停止服务</string>

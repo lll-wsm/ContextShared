@@ -3,22 +3,79 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F8FAFC">
+    android:background="@color/bg_page"
+    android:fillViewport="true">
 
     <LinearLayout
+        android:id="@+id/rootContainer"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:padding="20dp">
 
-        <!-- 顶部标题与开关卡片 -->
-        <com.google.android.material.card.MaterialCardView
+        <!-- 顶部品牌 Header -->
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:cardCornerRadius="16dp"
-            app:cardElevation="2dp"
-            app:strokeColor="#E2E8F0"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="20dp">
+
+            <ImageView
+                android:id="@+id/ivAppLogo"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:src="@mipmap/ic_launcher"
+                android:contentDescription="@string/app_name" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:layout_marginStart="14dp">
+
+                <TextView
+                    android:id="@+id/tvAppTitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/app_title"
+                    android:textColor="@color/text_title"
+                    android:textSize="20sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/app_subtitle"
+                    android:textColor="@color/text_sub"
+                    android:textSize="13sp"
+                    android:layout_marginTop="2dp" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/tvVersionTag"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="v1.0"
+                android:textColor="@color/text_sub"
+                android:textSize="12sp"
+                android:background="@color/status_gray_bg"
+                android:paddingHorizontal="10dp"
+                android:paddingVertical="4dp" />
+        </LinearLayout>
+
+        <!-- 核心 Hero 状态与开关卡片 -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cardServerHero"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:cardCornerRadius="20dp"
+            app:cardElevation="3dp"
+            app:strokeColor="@color/card_stroke"
             app:strokeWidth="1dp"
+            app:cardBackgroundColor="@color/bg_card"
             android:layout_marginBottom="16dp">
 
             <LinearLayout
@@ -31,47 +88,95 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content">
 
-                    <TextView
+                    <LinearLayout
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/app_title"
-                        android:textSize="22sp"
-                        android:textStyle="bold"
-                        android:textColor="#0F172A" />
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
+
+                        <ImageView
+                            android:id="@+id/ivStatusDot"
+                            android:layout_width="16dp"
+                            android:layout_height="16dp"
+                            android:src="@drawable/ic_launcher_foreground"
+                            android:background="@color/status_gray_bg"
+                            android:layout_marginEnd="10dp" />
+
+                        <TextView
+                            android:id="@+id/tvServerStatus"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/server_stopped"
+                            android:textColor="@color/text_title"
+                            android:textSize="17sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
 
                     <com.google.android.material.switchmaterial.SwitchMaterial
                         android:id="@+id/switchServer"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_alignParentEnd="true" />
+                        android:layout_alignParentEnd="true"
+                        android:layout_centerVertical="true" />
                 </RelativeLayout>
 
                 <TextView
-                    android:id="@+id/tvServerStatus"
-                    android:layout_width="wrap_content"
+                    android:id="@+id/tvServerHint"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="@string/server_stopped"
-                    android:textColor="#64748B"
-                    android:textSize="14sp"
-                    android:layout_marginTop="4dp" />
+                    android:text="@string/server_status_hint_off"
+                    android:textColor="@color/text_sub"
+                    android:textSize="13sp"
+                    android:layout_marginTop="6dp" />
+
+                <!-- 网络环境提示与热点快捷入口 -->
+                <LinearLayout
+                    android:id="@+id/layoutNetworkBar"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginTop="14dp"
+                    android:paddingTop="12dp">
+
+                    <TextView
+                        android:id="@+id/tvNetworkInfo"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="📶 Wi-Fi"
+                        android:textColor="@color/text_sub"
+                        android:textSize="12sp" />
+
+                    <Button
+                        android:id="@+id/btnOpenHotspot"
+                        style="@style/Widget.MaterialComponents.Button.TextButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="36dp"
+                        android:text="@string/open_hotspot"
+                        android:textSize="12sp"
+                        android:textColor="@color/brand_primary"
+                        android:padding="0dp" />
+                </LinearLayout>
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- 连接信息卡片 (二维码 & URL) -->
+        <!-- 连接信息卡片 (二维码 & URL & PIN码) -->
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/cardConnection"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:cardCornerRadius="16dp"
-            app:cardElevation="2dp"
-            app:strokeColor="#E2E8F0"
+            app:cardCornerRadius="20dp"
+            app:cardElevation="3dp"
+            app:strokeColor="@color/card_stroke"
             app:strokeWidth="1dp"
+            app:cardBackgroundColor="@color/bg_card"
+            android:visibility="gone"
             android:layout_marginBottom="16dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:gravity="center_horizontal"
                 android:orientation="vertical"
                 android:padding="20dp">
 
@@ -79,94 +184,178 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/browser_visit_hint"
-                    android:textColor="#64748B"
-                    android:textSize="14sp" />
+                    android:textColor="@color/text_sub"
+                    android:textSize="13sp" />
 
-                <TextView
-                    android:id="@+id/tvServerUrl"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="http://192.168.1.100:8080"
-                    android:textColor="#2563EB"
-                    android:textSize="18sp"
-                    android:textStyle="bold"
-                    android:layout_marginTop="6dp"
-                    android:layout_marginBottom="16dp" />
-
-                <ImageView
-                    android:id="@+id/ivQrCode"
-                    android:layout_width="180dp"
-                    android:layout_height="180dp"
-                    android:background="#FFFFFF"
-                    android:scaleType="fitCenter" />
-
-                <!-- 配对 PIN 码 -->
+                <!-- 网址展示框与快捷按钮 -->
                 <LinearLayout
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:orientation="horizontal"
                     android:gravity="center_vertical"
-                    android:layout_marginTop="16dp">
+                    android:background="@color/pin_bg"
+                    android:paddingHorizontal="14dp"
+                    android:paddingVertical="10dp"
+                    android:layout_marginTop="8dp"
+                    android:layout_marginBottom="18dp">
 
                     <TextView
-                        android:layout_width="wrap_content"
+                        android:id="@+id/tvServerUrl"
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:text="@string/pairing_pin"
-                        android:textColor="#0F172A"
-                        android:textSize="16sp" />
-
-                    <TextView
-                        android:id="@+id/tvPinCode"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="8848"
-                        android:textColor="#2563EB"
-                        android:textSize="20sp"
-                        android:textStyle="bold"
-                        android:layout_marginStart="8dp" />
+                        android:layout_weight="1"
+                        android:text="http://192.168.1.100:8080"
+                        android:textColor="@color/brand_primary"
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
 
                     <Button
-                        android:id="@+id/btnRefreshPin"
+                        android:id="@+id/btnCopyUrl"
                         style="@style/Widget.MaterialComponents.Button.TextButton"
                         android:layout_width="wrap_content"
+                        android:layout_height="36dp"
+                        android:text="@string/copy_url"
+                        android:textColor="@color/brand_primary"
+                        android:textSize="13sp" />
+
+                    <Button
+                        android:id="@+id/btnShareUrl"
+                        style="@style/Widget.MaterialComponents.Button.TextButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="36dp"
+                        android:text="@string/share_url"
+                        android:textColor="@color/brand_primary"
+                        android:textSize="13sp" />
+                </LinearLayout>
+
+                <!-- 二维码与 PIN 码卡片并排 -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+                    <!-- 左侧：二维码 -->
+                    <LinearLayout
+                        android:id="@+id/layoutQrCode"
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:text="@string/refresh"
-                        android:layout_marginStart="8dp" />
+                        android:layout_weight="1"
+                        android:orientation="vertical"
+                        android:gravity="center_horizontal"
+                        android:background="@color/bg_page"
+                        android:padding="12dp"
+                        android:layout_marginEnd="8dp">
+
+                        <ImageView
+                            android:id="@+id/ivQrCode"
+                            android:layout_width="140dp"
+                            android:layout_height="140dp"
+                            android:scaleType="fitCenter"
+                            android:contentDescription="@string/qr_code_title" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/qr_tap_hint"
+                            android:textColor="@color/text_sub"
+                            android:textSize="11sp"
+                            android:layout_marginTop="6dp" />
+                    </LinearLayout>
+
+                    <!-- 右侧：PIN 码卡片 -->
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical"
+                        android:gravity="center_horizontal"
+                        android:background="@color/bg_page"
+                        android:padding="16dp"
+                        android:layout_marginStart="8dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/pairing_pin"
+                            android:textColor="@color/text_sub"
+                            android:textSize="13sp" />
+
+                        <TextView
+                            android:id="@+id/tvPinCode"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="8848"
+                            android:textColor="@color/brand_primary"
+                            android:textSize="28sp"
+                            android:textStyle="bold"
+                            android:letterSpacing="0.2"
+                            android:layout_marginVertical="8dp" />
+
+                        <Button
+                            android:id="@+id/btnRefreshPin"
+                            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                            android:layout_width="match_parent"
+                            android:layout_height="38dp"
+                            android:text="@string/refresh"
+                            android:textSize="12sp"
+                            android:textColor="@color/text_title"
+                            app:strokeColor="@color/card_stroke" />
+                    </LinearLayout>
                 </LinearLayout>
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- 实时日志卡片 -->
+        <!-- 传输动态与日志看板卡片 -->
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:cardCornerRadius="16dp"
-            app:cardElevation="2dp"
-            app:strokeColor="#E2E8F0"
-            app:strokeWidth="1dp">
+            app:cardCornerRadius="20dp"
+            app:cardElevation="3dp"
+            app:strokeColor="@color/card_stroke"
+            app:strokeWidth="1dp"
+            app:cardBackgroundColor="@color/bg_card">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="16dp">
+                android:padding="18dp">
 
-                <TextView
-                    android:layout_width="wrap_content"
+                <RelativeLayout
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="@string/transfer_logs"
-                    android:textColor="#0F172A"
-                    android:textStyle="bold"
-                    android:textSize="15sp"
-                    android:layout_marginBottom="8dp" />
+                    android:layout_marginBottom="10dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/transfer_logs"
+                        android:textColor="@color/text_title"
+                        android:textStyle="bold"
+                        android:textSize="15sp" />
+
+                    <Button
+                        android:id="@+id/btnClearLogs"
+                        style="@style/Widget.MaterialComponents.Button.TextButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="32dp"
+                        android:layout_alignParentEnd="true"
+                        android:text="@string/clear_logs"
+                        android:textColor="@color/text_sub"
+                        android:textSize="12sp"
+                        android:padding="0dp" />
+                </RelativeLayout>
 
                 <TextView
                     android:id="@+id/tvLogs"
                     android:layout_width="match_parent"
-                    android:layout_height="120dp"
-                    android:background="#F1F5F9"
-                    android:padding="8dp"
-                    android:textColor="#334155"
+                    android:layout_height="140dp"
+                    android:background="@color/log_bg"
+                    android:padding="12dp"
+                    android:textColor="@color/text_title"
                     android:textSize="12sp"
+                    android:lineSpacingMultiplier="1.2"
                     android:scrollbars="vertical"
                     android:text="@string/waiting_connection" />
             </LinearLayout>

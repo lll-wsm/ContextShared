@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Dark Mode Brand Palette -->
+    <color name="brand_primary">#30C978</color>
+    <color name="brand_primary_dark">#249F5D</color>
+    <color name="brand_primary_light">#133826</color>
+    <color name="brand_accent">#A78BFA</color>
+    <color name="brand_orange">#FB923C</color>
+    
+    <color name="bg_page">#0F172A</color>
+    <color name="bg_card">#1E293B</color>
+    <color name="text_title">#F8FAFC</color>
+    <color name="text_sub">#94A3B8</color>
+    <color name="card_stroke">#334155</color>
+    <color name="log_bg">#0B1120</color>
+    <color name="status_green_bg">#14532D</color>
+    <color name="status_green_text">#4ADE80</color>
+    <color name="status_gray_bg">#334155</color>
+    <color name="status_gray_text">#94A3B8</color>
+    <color name="pin_bg">#1E3A8A</color>
+</resources>

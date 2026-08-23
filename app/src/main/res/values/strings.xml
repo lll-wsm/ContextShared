@@ -1,16 +1,36 @@
 <resources>
     <string name="app_name">ContextShared</string>
     <string name="app_title">ContextShared</string>
-    <string name="server_stopped">⚪ Server stopped</string>
-    <string name="server_running">🟢 Server is running on LAN</string>
-    <string name="browser_visit_hint">Visit URL from computer browser:</string>
-    <string name="pairing_pin">Pairing PIN:</string>
+    <string name="app_subtitle">Fast Local Transfer</string>
+    
+    <string name="server_stopped">Server Stopped</string>
+    <string name="server_running">Server Running on LAN</string>
+    <string name="server_status_hint_off">Switch on to start sharing files and clipboard</string>
+    <string name="server_status_hint_on">Accessible to any device on the same network</string>
+    
+    <string name="browser_visit_hint">Open this URL in any browser:</string>
+    <string name="copy_url">Copy</string>
+    <string name="url_copied">URL copied to clipboard</string>
+    <string name="share_url">Share</string>
+    <string name="share_title">Connect to ContextShared</string>
+    
+    <string name="qr_code_title">Scan QR Code</string>
+    <string name="qr_tap_hint">Tap to enlarge QR code</string>
+    <string name="pairing_pin">Security PIN</string>
     <string name="refresh">Refresh</string>
-    <string name="transfer_logs">📊 Transfer Logs</string>
-    <string name="waiting_connection">Waiting for connections...</string>
     <string name="pin_refreshed">PIN refreshed: %s</string>
+    
+    <string name="network_info_title">Network: %s</string>
+    <string name="hotspot_hint">Not connected to Wi-Fi? Open Hotspot</string>
+    <string name="open_hotspot">Hotspot</string>
+    
+    <string name="transfer_logs">Activity Stream</string>
+    <string name="waiting_connection">Waiting for connection...</string>
+    <string name="clear_logs">Clear</string>
+    
     <string name="permissions_granted">Permissions granted</string>
     <string name="permissions_partially_denied">Some permissions were not granted, file and notification features may be affected</string>
+    
     <string name="service_notification_title">ContextShared Service Running</string>
     <string name="service_notification_content">Server ready: %s</string>
     <string name="service_stop_action">Stop</string>
