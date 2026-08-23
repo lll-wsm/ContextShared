@@ -77,7 +77,7 @@ public class WebService extends Service {
     private void startForegroundWithNotification() {
         String ip = NetworkUtils.getLocalIpAddress(this);
         int port = serverManager.getHttpPort();
-        String contentText = "服务已就绪: http://" + ip + ":" + port;
+        String contentText = getString(R.string.service_notification_content, "http://" + ip + ":" + port);
 
         Intent mainIntent = new Intent(this, MainActivity.class);
         PendingIntent mainPendingIntent = PendingIntent.getActivity(
@@ -89,11 +89,11 @@ public class WebService extends Service {
                 this, 1, stopIntent, PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT);
 
         Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
-                .setContentTitle("ContextShared 互联服务运行中")
+                .setContentTitle(getString(R.string.service_notification_title))
                 .setContentText(contentText)
                 .setSmallIcon(R.mipmap.ic_launcher)
                 .setContentIntent(mainPendingIntent)
-                .addAction(android.R.drawable.ic_menu_close_clear_cancel, "停止服务", stopPendingIntent)
+                .addAction(android.R.drawable.ic_menu_close_clear_cancel, getString(R.string.service_stop_action), stopPendingIntent)
                 .setOngoing(true)
                 .build();
 
@@ -108,10 +108,10 @@ public class WebService extends Service {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationChannel channel = new NotificationChannel(
                     CHANNEL_ID,
-                    "ContextShared Server Service",
+                    getString(R.string.service_channel_name),
                     NotificationManager.IMPORTANCE_LOW
             );
-            channel.setDescription("保持 ContextShared 本地局域网传输服务在后台正常运行");
+            channel.setDescription(getString(R.string.service_channel_desc));
             NotificationManager manager = getSystemService(NotificationManager.class);
             if (manager != null) {
                 manager.createNotificationChannel(channel);

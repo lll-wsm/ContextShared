@@ -1,3 +1,19 @@
 <resources>
     <string name="app_name">ContextShared</string>
+    <string name="app_title">ContextShared</string>
+    <string name="server_stopped">⚪ Server stopped</string>
+    <string name="server_running">🟢 Server is running on LAN</string>
+    <string name="browser_visit_hint">Visit URL from computer browser:</string>
+    <string name="pairing_pin">Pairing PIN:</string>
+    <string name="refresh">Refresh</string>
+    <string name="transfer_logs">📊 Transfer Logs</string>
+    <string name="waiting_connection">Waiting for connections...</string>
+    <string name="pin_refreshed">PIN refreshed: %s</string>
+    <string name="permissions_granted">Permissions granted</string>
+    <string name="permissions_partially_denied">Some permissions were not granted, file and notification features may be affected</string>
+    <string name="service_notification_title">ContextShared Service Running</string>
+    <string name="service_notification_content">Server ready: %s</string>
+    <string name="service_stop_action">Stop</string>
+    <string name="service_channel_name">ContextShared Server Service</string>
+    <string name="service_channel_desc">Keeps ContextShared local network transfer service running in the background</string>
 </resources>

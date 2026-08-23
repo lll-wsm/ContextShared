@@ -97,7 +97,7 @@ public class MainActivity extends AppCompatActivity implements ServerManager.Ser
             if (webService != null) {
                 String newPin = webService.getServerManager().getSessionManager().refreshPinCode();
                 tvPinCode.setText(newPin);
-                Toast.makeText(this, "PIN 码已刷新: " + newPin, Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, getString(R.string.pin_refreshed, newPin), Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -134,9 +134,9 @@ public class MainActivity extends AppCompatActivity implements ServerManager.Ser
                 }
             }
             if (allGranted && grantResults.length > 0) {
-                Toast.makeText(this, "权限已授予", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, getString(R.string.permissions_granted), Toast.LENGTH_SHORT).show();
             } else if (grantResults.length > 0) {
-                Toast.makeText(this, "部分权限未授予，可能影响文件和通知功能", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, getString(R.string.permissions_partially_denied), Toast.LENGTH_SHORT).show();
             }
             updateUiState();
         }
@@ -175,7 +175,7 @@ public class MainActivity extends AppCompatActivity implements ServerManager.Ser
     public void onServerStarted(String ip, int httpPort, int wsPort) {
         runOnUiThread(() -> {
             String url = "http://" + ip + ":" + httpPort;
-            tvServerStatus.setText("🟢 局域网服务运行中");
+            tvServerStatus.setText(getString(R.string.server_running));
             cardConnection.setVisibility(View.VISIBLE);
             tvServerUrl.setText(url);
 
@@ -193,7 +193,7 @@ public class MainActivity extends AppCompatActivity implements ServerManager.Ser
     @Override
     public void onServerStopped() {
         runOnUiThread(() -> {
-            tvServerStatus.setText("⚪ 服务已停止");
+            tvServerStatus.setText(getString(R.string.server_stopped));
             cardConnection.setVisibility(View.GONE);
         });
     }

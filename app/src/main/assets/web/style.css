@@ -30,6 +30,8 @@ body { background-color: var(--bg-main); color: var(--text-main); min-height: 10
 .logo { font-size: 1.25rem; font-weight: 700; color: var(--primary); display: flex; align-items: center; gap: 0.6rem; }
 .logo-img { width: 32px; height: 32px; border-radius: 8px; object-fit: contain; }
 .device-tag, .battery-tag { padding: 0.25rem 0.75rem; background: var(--border); border-radius: 20px; font-size: 0.875rem; }
+.lang-btn { background: var(--border); border: 1px solid var(--border); color: var(--text-main); padding: 0.3rem 0.75rem; border-radius: 20px; font-size: 0.8rem; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+.lang-btn:hover { border-color: var(--primary); color: var(--primary); }
 
 .status-indicator { display: flex; align-items: center; gap: 0.5rem; font-size: 0.875rem; }
 .status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--success); }

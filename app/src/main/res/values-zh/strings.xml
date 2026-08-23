@@ -1,0 +1,19 @@
+<resources>
+    <string name="app_name">内容共享</string>
+    <string name="app_title">内容共享</string>
+    <string name="server_stopped">⚪ 服务已停止</string>
+    <string name="server_running">🟢 局域网服务运行中</string>
+    <string name="browser_visit_hint">电脑浏览器访问以下网址：</string>
+    <string name="pairing_pin">配对 PIN 码：</string>
+    <string name="refresh">刷新</string>
+    <string name="transfer_logs">📊 传输日志</string>
+    <string name="waiting_connection">等待连接...</string>
+    <string name="pin_refreshed">PIN 码已刷新: %s</string>
+    <string name="permissions_granted">权限已授予</string>
+    <string name="permissions_partially_denied">部分权限未授予，可能影响文件和通知功能</string>
+    <string name="service_notification_title">内容共享 互联服务运行中</string>
+    <string name="service_notification_content">服务已就绪: %s</string>
+    <string name="service_stop_action">停止服务</string>
+    <string name="service_channel_name">内容共享 服务</string>
+    <string name="service_channel_desc">保持内容共享本地局域网传输服务在后台正常运行</string>
+</resources>

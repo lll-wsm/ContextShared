@@ -4,7 +4,122 @@ let reconnectTimer = null;
 let heartbeatTimer = null;
 let currentCategory = 'downloads';
 
+// 国际化双语字典 (i18n Dictionary)
+const I18N = {
+    zh: {
+        appTitle: "内容共享 - 极速跨端互联",
+        logoName: "内容共享",
+        connected: "已连接",
+        disconnected: "连接已断开 (重连中...)",
+        clipTitle: "📋 剪贴板同步",
+        clipBadge: "实时监听中",
+        phoneRecentClip: "手机端最近复制：",
+        noClipContent: "暂无复制内容",
+        copyToPc: "复制到电脑",
+        copiedToClipboard: "已复制到电脑剪贴板",
+        copyFailed: "复制失败，请手动复制",
+        textPlaceholder: "输入要发送到手机的文本或网址... (按 Ctrl/Cmd+Enter 发送)",
+        sendToClipboard: "📤 发送到手机剪贴板",
+        openInPhone: "🌐 手机浏览器打开",
+        openUrlSent: "已发送打开指令至手机",
+        fileTransferTitle: "📁 文件极速快传",
+        dragDropBadge: "拖拽即传",
+        dropzoneText: "将文件拖拽至此，或",
+        dropzoneBtn: "点击选择文件",
+        phoneFilesTitle: "📂 手机文件库",
+        tabDownloads: "📥 下载/共享",
+        tabPhotos: "🖼 照片/相册",
+        tabDocuments: "📑 文档",
+        emptyDir: "目录为空",
+        download: "下载",
+        pinModalTitle: "🔒 设备配对验证",
+        pinModalDesc: "请输入手机屏幕上显示的 4 位连接验证码：",
+        pinInputPlaceholder: "输入4位PIN码",
+        pinSubmitBtn: "验证并连接",
+        pinError: "PIN 码错误，请重新输入",
+        dragOverlayText: "松开鼠标即可立即上传至手机",
+        uploadDone: "✅ 完成",
+        uploadFail: "❌ 失败",
+        loading: "加载中...",
+        phoneTag: "手机"
+    },
+    en: {
+        appTitle: "ContextShared - Fast Cross-Device Transfer",
+        logoName: "ContextShared",
+        connected: "Connected",
+        disconnected: "Disconnected (Reconnecting...)",
+        clipTitle: "📋 Clipboard Sync",
+        clipBadge: "Live Listening",
+        phoneRecentClip: "Latest copied on phone:",
+        noClipContent: "No clipboard content yet",
+        copyToPc: "Copy to PC",
+        copiedToClipboard: "Copied to PC clipboard",
+        copyFailed: "Copy failed, please copy manually",
+        textPlaceholder: "Enter text or URL to send to phone... (Press Ctrl/Cmd+Enter to send)",
+        sendToClipboard: "📤 Send to Phone Clipboard",
+        openInPhone: "🌐 Open in Phone Browser",
+        openUrlSent: "Open URL command sent to phone",
+        fileTransferTitle: "📁 Fast File Transfer",
+        dragDropBadge: "Drag & Drop",
+        dropzoneText: "Drag files here, or",
+        dropzoneBtn: "browse files",
+        phoneFilesTitle: "📂 Phone Storage",
+        tabDownloads: "📥 Downloads/Shared",
+        tabPhotos: "🖼 Photos/Camera",
+        tabDocuments: "📑 Documents",
+        emptyDir: "Directory is empty",
+        download: "Download",
+        pinModalTitle: "🔒 Device Authentication",
+        pinModalDesc: "Please enter the 4-digit PIN displayed on the phone:",
+        pinInputPlaceholder: "Enter 4-digit PIN",
+        pinSubmitBtn: "Verify & Connect",
+        pinError: "Invalid PIN, please try again",
+        dragOverlayText: "Drop files anywhere to upload to phone",
+        uploadDone: "✅ Completed",
+        uploadFail: "❌ Failed",
+        loading: "Loading...",
+        phoneTag: "Phone"
+    }
+};
+
+// 自动根据系统语言初始化 (Auto-detect system / browser language)
+let currentLang = localStorage.getItem('cs_lang') || (
+    (navigator.language || navigator.userLanguage || 'zh').toLowerCase().startsWith('zh') ? 'zh' : 'en'
+);
+
+function t(key) {
+    const dict = I18N[currentLang] || I18N.zh;
+    return dict[key] || key;
+}
+
+function applyTranslations() {
+    document.title = t('appTitle');
+    const logoText = document.getElementById('appLogoText');
+    if (logoText) logoText.innerText = t('logoName');
+
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (key && I18N[currentLang] && I18N[currentLang][key]) {
+            el.innerText = I18N[currentLang][key];
+        }
+    });
+
+    document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+        const key = el.getAttribute('data-i18n-placeholder');
+        if (key && I18N[currentLang] && I18N[currentLang][key]) {
+            el.placeholder = I18N[currentLang][key];
+        }
+    });
+
+    const statusText = document.getElementById('statusText');
+    if (statusText) {
+        const isConnected = document.getElementById('statusIndicator').classList.contains('connected');
+        statusText.innerText = isConnected ? t('connected') : t('disconnected');
+    }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
+    applyTranslations();
     initWebSocket();
     initEventListeners();
     fetchDeviceInfo();
@@ -35,7 +150,7 @@ function initWebSocket() {
     socket.onopen = () => {
         if (ws !== socket) return;
         document.getElementById('statusIndicator').className = 'status-indicator connected';
-        document.getElementById('statusText').innerText = '已连接';
+        document.getElementById('statusText').innerText = t('connected');
         document.getElementById('pinModal').classList.remove('active');
 
         if (heartbeatTimer) {
@@ -68,7 +183,7 @@ function initWebSocket() {
         }
         if (ws !== socket) return;
         document.getElementById('statusIndicator').className = 'status-indicator disconnected';
-        document.getElementById('statusText').innerText = '连接已断开 (重连中...)';
+        document.getElementById('statusText').innerText = t('disconnected');
         if (!reconnectTimer) {
             reconnectTimer = setTimeout(() => {
                 reconnectTimer = null;
@@ -173,7 +288,7 @@ function copyToClipboard(text) {
 function renderFileList(files) {
     const grid = document.getElementById('fileGrid');
     if (!files || files.length === 0) {
-        grid.innerHTML = '<div class="empty-state">目录为空</div>';
+        grid.innerHTML = `<div class="empty-state">${t('emptyDir')}</div>`;
         return;
     }
     grid.innerHTML = files.map(file => {
@@ -184,22 +299,33 @@ function renderFileList(files) {
         <div class="file-card">
             <div class="file-name" title="${safeName}">📄 ${safeName}</div>
             <div class="file-meta">${formatBytes(file.size)}</div>
-            <a href="/api/files/download?path=${encodedPath}&token=${encodedToken}" class="btn btn-secondary btn-sm" download>下载</a>
+            <a href="/api/files/download?path=${encodedPath}&token=${encodedToken}" class="btn btn-secondary btn-sm" download>${t('download')}</a>
         </div>
     `;
     }).join('');
 }
 
 function initEventListeners() {
+    // 语言手动切换按钮 (Language Toggle Button)
+    const langBtn = document.getElementById('langSwitchBtn');
+    if (langBtn) {
+        langBtn.addEventListener('click', () => {
+            currentLang = currentLang === 'zh' ? 'en' : 'zh';
+            localStorage.setItem('cs_lang', currentLang);
+            applyTranslations();
+            fetchFiles(currentCategory);
+        });
+    }
+
     // 复制手机剪贴板
     document.getElementById('btnCopyPhoneClip').addEventListener('click', () => {
         const text = document.getElementById('phoneClipContent').innerText;
-        if (text && text !== '暂无复制内容') {
+        if (text && text !== t('noClipContent') && text !== '暂无复制内容') {
             copyToClipboard(text).then(() => {
-                alert('已复制到电脑剪贴板');
+                alert(t('copiedToClipboard'));
             }).catch((err) => {
                 console.error('Copy failed', err);
-                alert('复制失败，请手动复制');
+                alert(t('copyFailed'));
             });
         }
     });
@@ -221,7 +347,7 @@ function initEventListeners() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ url: text, token: token })
         });
-        alert('已发送打开指令至手机');
+        alert(t('openUrlSent'));
     });
 
     // PIN 码提交
@@ -241,7 +367,7 @@ function initEventListeners() {
             initWebSocket();
             fetchFiles(currentCategory);
         } else {
-            alert('PIN 码错误，请重新输入');
+            alert(t('pinError'));
         }
     });
 
@@ -333,10 +459,10 @@ function uploadSingleFile(file) {
 
     xhr.onload = () => {
         if (xhr.status === 200) {
-            percentText.innerText = '✅ 完成';
+            percentText.innerText = t('uploadDone');
             fetchFiles(currentCategory);
         } else {
-            percentText.innerText = '❌ 失败';
+            percentText.innerText = t('uploadFail');
         }
     };
 
