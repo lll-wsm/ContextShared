@@ -39,7 +39,7 @@ public class AppWebSocketServer extends NanoWSD {
     public void broadcast(WsMessage message) {
         String json = message.toJson();
         for (ContextWebSocket client : connectedClients) {
-            if (client.isOpen()) {
+            if (client.isOpen() && client.isAuthenticated()) {
                 try {
                     client.send(json);
                 } catch (IOException ignored) {}
@@ -51,13 +51,19 @@ public class AppWebSocketServer extends NanoWSD {
         return connectedClients.size();
     }
 
-    private class ContextWebSocket extends WebSocket {
+    class ContextWebSocket extends WebSocket {
         private boolean authenticated = false;
 
         public ContextWebSocket(IHTTPSession handshakeRequest) {
             super(handshakeRequest);
-            String token = handshakeRequest.getParms().get("token");
+            String token = (handshakeRequest != null && handshakeRequest.getParms() != null)
+                    ? handshakeRequest.getParms().get("token")
+                    : null;
             this.authenticated = sessionManager.isValidToken(token);
+        }
+
+        public boolean isAuthenticated() {
+            return authenticated;
         }
 
         @Override
@@ -77,6 +83,9 @@ public class AppWebSocketServer extends NanoWSD {
                 WsMessage wsMsg = WsMessage.fromJson(payload);
                 if (wsMsg != null) {
                     if ("CLIPBOARD_SEND".equals(wsMsg.getType())) {
+                        if (!authenticated) {
+                            return;
+                        }
                         String text = wsMsg.getPayload() != null ? wsMsg.getPayload().toString() : "";
                         if (messageListener != null) {
                             messageListener.onClipboardReceived(text);
