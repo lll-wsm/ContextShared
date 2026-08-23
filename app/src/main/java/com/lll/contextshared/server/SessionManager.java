@@ -10,7 +10,7 @@ public class SessionManager {
     private final SecureRandom random = new SecureRandom();
     private String currentPinCode;
     private final Set<String> validTokens = Collections.newSetFromMap(new ConcurrentHashMap<>());
-    private boolean authRequired = true;
+    private volatile boolean authRequired = true;
 
     public SessionManager() {
         refreshPinCode();

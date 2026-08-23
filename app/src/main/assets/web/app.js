@@ -1,5 +1,6 @@
 let token = localStorage.getItem('cs_token') || '';
 let ws = null;
+let reconnectTimer = null;
 let currentCategory = 'downloads';
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -10,17 +11,31 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function initWebSocket() {
-    const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const wsUrl = `${protocol}//${location.host}/ws?token=${token}`;
-    ws = new WebSocket(wsUrl);
+    if (reconnectTimer) {
+        clearTimeout(reconnectTimer);
+        reconnectTimer = null;
+    }
+    if (ws) {
+        ws.onclose = null;
+        ws.onerror = null;
+        ws.close();
+        ws = null;
+    }
 
-    ws.onopen = () => {
+    const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const wsUrl = `${protocol}//${location.host}/ws?token=${encodeURIComponent(token)}`;
+    const socket = new WebSocket(wsUrl);
+    ws = socket;
+
+    socket.onopen = () => {
+        if (ws !== socket) return;
         document.getElementById('statusIndicator').className = 'status-indicator connected';
         document.getElementById('statusText').innerText = '已连接';
         document.getElementById('pinModal').classList.remove('active');
     };
 
-    ws.onmessage = (event) => {
+    socket.onmessage = (event) => {
+        if (ws !== socket) return;
         try {
             const data = JSON.parse(event.data);
             handleWsMessage(data);
@@ -29,10 +44,21 @@ function initWebSocket() {
         }
     };
 
-    ws.onclose = () => {
+    socket.onclose = () => {
+        if (ws !== socket) return;
         document.getElementById('statusIndicator').className = 'status-indicator disconnected';
         document.getElementById('statusText').innerText = '连接已断开 (重连中...)';
-        setTimeout(initWebSocket, 2000);
+        if (!reconnectTimer) {
+            reconnectTimer = setTimeout(() => {
+                reconnectTimer = null;
+                initWebSocket();
+            }, 2000);
+        }
+    };
+
+    socket.onerror = () => {
+        if (ws !== socket) return;
+        socket.close();
     };
 }
 
@@ -68,7 +94,7 @@ async function fetchDeviceInfo() {
 
 async function fetchFiles(category) {
     try {
-        const res = await fetch(`/api/files/list?category=${category}&token=${token}`);
+        const res = await fetch(`/api/files/list?category=${encodeURIComponent(category)}&token=${encodeURIComponent(token)}`);
         if (res.status === 401) {
             document.getElementById('pinModal').classList.add('active');
             return;
@@ -80,19 +106,63 @@ async function fetchFiles(category) {
     }
 }
 
+function escapeHtml(str) {
+    if (!str) return '';
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
+
+function copyToClipboard(text) {
+    if (navigator.clipboard && window.isSecureContext) {
+        return navigator.clipboard.writeText(text);
+    } else {
+        return new Promise((resolve, reject) => {
+            const textArea = document.createElement("textarea");
+            textArea.value = text;
+            textArea.style.position = "fixed";
+            textArea.style.left = "-999999px";
+            textArea.style.top = "-999999px";
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+            try {
+                const successful = document.execCommand('copy');
+                document.body.removeChild(textArea);
+                if (successful) {
+                    resolve();
+                } else {
+                    reject(new Error('execCommand copy failed'));
+                }
+            } catch (err) {
+                document.body.removeChild(textArea);
+                reject(err);
+            }
+        });
+    }
+}
+
 function renderFileList(files) {
     const grid = document.getElementById('fileGrid');
     if (!files || files.length === 0) {
         grid.innerHTML = '<div class="empty-state">目录为空</div>';
         return;
     }
-    grid.innerHTML = files.map(file => `
+    grid.innerHTML = files.map(file => {
+        const safeName = escapeHtml(file.name);
+        const encodedPath = encodeURIComponent(file.path || '');
+        const encodedToken = encodeURIComponent(token || '');
+        return `
         <div class="file-card">
-            <div class="file-name" title="${file.name}">📄 ${file.name}</div>
+            <div class="file-name" title="${safeName}">📄 ${safeName}</div>
             <div class="file-meta">${formatBytes(file.size)}</div>
-            <a href="/api/files/download?path=${encodeURIComponent(file.path)}&token=${token}" class="btn btn-secondary btn-sm" download>下载</a>
+            <a href="/api/files/download?path=${encodedPath}&token=${encodedToken}" class="btn btn-secondary btn-sm" download>下载</a>
         </div>
-    `).join('');
+    `;
+    }).join('');
 }
 
 function initEventListeners() {
@@ -100,7 +170,12 @@ function initEventListeners() {
     document.getElementById('btnCopyPhoneClip').addEventListener('click', () => {
         const text = document.getElementById('phoneClipContent').innerText;
         if (text && text !== '暂无复制内容') {
-            navigator.clipboard.writeText(text).then(() => alert('已复制到电脑剪贴板'));
+            copyToClipboard(text).then(() => {
+                alert('已复制到电脑剪贴板');
+            }).catch((err) => {
+                console.error('Copy failed', err);
+                alert('复制失败，请手动复制');
+            });
         }
     });
 
@@ -138,7 +213,6 @@ function initEventListeners() {
             token = data.token;
             localStorage.setItem('cs_token', token);
             document.getElementById('pinModal').classList.remove('active');
-            if (ws) ws.close();
             initWebSocket();
             fetchFiles(currentCategory);
         } else {
@@ -205,9 +279,10 @@ function uploadSingleFile(file) {
     const list = document.getElementById('uploadList');
     const item = document.createElement('div');
     item.className = 'upload-item';
+    const safeName = escapeHtml(file.name);
     item.innerHTML = `
         <div style="flex: 1; margin-right: 10px;">
-            <div>${file.name} (${formatBytes(file.size)})</div>
+            <div>${safeName} (${formatBytes(file.size)})</div>
             <div class="progress-bar-bg"><div class="progress-bar-fill"></div></div>
         </div>
         <span class="status-percent">0%</span>
@@ -221,7 +296,7 @@ function uploadSingleFile(file) {
     formData.append('file', file);
 
     const xhr = new XMLHttpRequest();
-    xhr.open('POST', `/api/files/upload?token=${token}`);
+    xhr.open('POST', `/api/files/upload?token=${encodeURIComponent(token)}`);
 
     xhr.upload.onprogress = (e) => {
         if (e.lengthComputable) {
