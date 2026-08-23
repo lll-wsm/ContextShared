@@ -52,6 +52,63 @@ public class StorageHelper {
         COMMON_MIME_TYPES.put("pptx", "application/vnd.openxmlformats-officedocument.presentationml.presentation");
     }
 
+    private static List<File> extraAllowedRoots = null;
+
+    public static void setExtraAllowedRoots(List<File> roots) {
+        extraAllowedRoots = roots;
+    }
+
+    public static List<File> getAllowedRoots() {
+        List<File> roots = new ArrayList<>();
+        if (extraAllowedRoots != null) {
+            roots.addAll(extraAllowedRoots);
+        }
+        try {
+            File ext = Environment.getExternalStorageDirectory();
+            if (ext != null) roots.add(ext);
+        } catch (Throwable ignored) {}
+        try {
+            File shared = getSharedStorageDir();
+            if (shared != null) roots.add(shared);
+        } catch (Throwable ignored) {}
+        try {
+            File dcim = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM);
+            if (dcim != null) roots.add(dcim);
+        } catch (Throwable ignored) {}
+        try {
+            File docs = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS);
+            if (docs != null) roots.add(docs);
+        } catch (Throwable ignored) {}
+        try {
+            File downloads = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+            if (downloads != null) roots.add(downloads);
+        } catch (Throwable ignored) {}
+        return roots;
+    }
+
+    public static boolean isPathAllowed(File file) {
+        return isPathAllowed(file, getAllowedRoots());
+    }
+
+    public static boolean isPathAllowed(File file, List<File> allowedRoots) {
+        if (file == null || allowedRoots == null || allowedRoots.isEmpty()) {
+            return false;
+        }
+        try {
+            String canonicalPath = file.getCanonicalPath();
+            for (File root : allowedRoots) {
+                if (root == null) continue;
+                String rootCanonical = root.getCanonicalPath();
+                if (canonicalPath.equals(rootCanonical) || canonicalPath.startsWith(rootCanonical + File.separator)) {
+                    return true;
+                }
+            }
+        } catch (Throwable e) {
+            return false;
+        }
+        return false;
+    }
+
     public static File getSharedStorageDir() {
         File downloads = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
         File appDir = new File(downloads, FOLDER_NAME);

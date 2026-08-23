@@ -122,6 +122,26 @@ public class MainActivity extends AppCompatActivity implements ServerManager.Ser
         }
     }
 
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == PERMISSION_REQUEST_CODE) {
+            boolean allGranted = true;
+            for (int result : grantResults) {
+                if (result != PackageManager.PERMISSION_GRANTED) {
+                    allGranted = false;
+                    break;
+                }
+            }
+            if (allGranted && grantResults.length > 0) {
+                Toast.makeText(this, "权限已授予", Toast.LENGTH_SHORT).show();
+            } else if (grantResults.length > 0) {
+                Toast.makeText(this, "部分权限未授予，可能影响文件和通知功能", Toast.LENGTH_SHORT).show();
+            }
+            updateUiState();
+        }
+    }
+
     private void bindWebService() {
         Intent intent = new Intent(this, WebService.class);
         bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE);

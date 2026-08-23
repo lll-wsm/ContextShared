@@ -1,6 +1,7 @@
 let token = localStorage.getItem('cs_token') || '';
 let ws = null;
 let reconnectTimer = null;
+let heartbeatTimer = null;
 let currentCategory = 'downloads';
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -14,6 +15,10 @@ function initWebSocket() {
     if (reconnectTimer) {
         clearTimeout(reconnectTimer);
         reconnectTimer = null;
+    }
+    if (heartbeatTimer) {
+        clearInterval(heartbeatTimer);
+        heartbeatTimer = null;
     }
     if (ws) {
         ws.onclose = null;
@@ -32,6 +37,18 @@ function initWebSocket() {
         document.getElementById('statusIndicator').className = 'status-indicator connected';
         document.getElementById('statusText').innerText = '已连接';
         document.getElementById('pinModal').classList.remove('active');
+
+        if (heartbeatTimer) {
+            clearInterval(heartbeatTimer);
+        }
+        heartbeatTimer = setInterval(() => {
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({
+                    type: 'PING',
+                    timestamp: Date.now()
+                }));
+            }
+        }, 15000);
     };
 
     socket.onmessage = (event) => {
@@ -45,6 +62,10 @@ function initWebSocket() {
     };
 
     socket.onclose = () => {
+        if (heartbeatTimer) {
+            clearInterval(heartbeatTimer);
+            heartbeatTimer = null;
+        }
         if (ws !== socket) return;
         document.getElementById('statusIndicator').className = 'status-indicator disconnected';
         document.getElementById('statusText').innerText = '连接已断开 (重连中...)';
@@ -57,6 +78,10 @@ function initWebSocket() {
     };
 
     socket.onerror = () => {
+        if (heartbeatTimer) {
+            clearInterval(heartbeatTimer);
+            heartbeatTimer = null;
+        }
         if (ws !== socket) return;
         socket.close();
     };

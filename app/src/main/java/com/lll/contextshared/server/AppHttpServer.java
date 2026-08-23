@@ -31,7 +31,7 @@ public class AppHttpServer extends NanoHTTPD {
 
     public AppHttpServer(Context context, int port, SessionManager sessionManager) {
         super(port);
-        this.context = context.getApplicationContext();
+        this.context = context != null ? context.getApplicationContext() : null;
         this.sessionManager = sessionManager;
     }
 
@@ -79,7 +79,7 @@ public class AppHttpServer extends NanoHTTPD {
                 List<FileItem> list = StorageHelper.listFiles(category);
                 return newFixedLengthResponse(Status.OK, "application/json", gson.toJson(list));
             } else if ("/api/files/download".equals(uri) && Method.GET.equals(method)) {
-                return serveFileDownload(params.get("path"));
+                return serveFileDownload(session, params.get("path"));
             } else if ("/api/files/upload".equals(uri) && Method.POST.equals(method)) {
                 return handleFileUpload(session);
             } else if ("/api/action/open-url".equals(uri) && Method.POST.equals(method)) {
@@ -136,15 +136,84 @@ public class AppHttpServer extends NanoHTTPD {
         }
     }
 
-    private Response serveFileDownload(String filePath) {
+    Response serveFileDownload(IHTTPSession session, String filePath) {
         if (filePath == null) return newFixedLengthResponse(Status.BAD_REQUEST, "text/plain", "Missing path");
         File file = new File(filePath);
         if (!file.exists() || file.isDirectory()) {
             return newFixedLengthResponse(Status.NOT_FOUND, "text/plain", "File not found");
         }
+        if (!StorageHelper.isPathAllowed(file)) {
+            return newFixedLengthResponse(Status.FORBIDDEN, "text/plain", "Forbidden: Access denied");
+        }
         try {
+            long fileLength = file.length();
+            String mimeType = StorageHelper.getMimeType(file.getName());
+
+            String rangeHeader = null;
+            if (session != null && session.getHeaders() != null) {
+                rangeHeader = session.getHeaders().get("range");
+                if (rangeHeader == null) {
+                    rangeHeader = session.getHeaders().get("Range");
+                }
+            }
+
+            if (rangeHeader != null && rangeHeader.startsWith("bytes=")) {
+                String rangeSpec = rangeHeader.substring("bytes=".length()).trim();
+                long start = 0;
+                long end = fileLength - 1;
+                boolean valid = false;
+
+                try {
+                    if (rangeSpec.startsWith("-")) {
+                        long suffix = Long.parseLong(rangeSpec.substring(1));
+                        start = Math.max(0, fileLength - suffix);
+                        end = fileLength - 1;
+                        valid = true;
+                    } else {
+                        String[] parts = rangeSpec.split("-", 2);
+                        if (parts.length > 0 && !parts[0].trim().isEmpty()) {
+                            start = Long.parseLong(parts[0].trim());
+                        }
+                        if (parts.length > 1 && !parts[1].trim().isEmpty()) {
+                            end = Long.parseLong(parts[1].trim());
+                        }
+                        valid = true;
+                    }
+                } catch (NumberFormatException ignored) {
+                    valid = false;
+                }
+
+                if (valid && start <= end && start < fileLength) {
+                    if (end >= fileLength) {
+                        end = fileLength - 1;
+                    }
+                    long contentLength = end - start + 1;
+                    FileInputStream fis = new FileInputStream(file);
+                    if (start > 0) {
+                        long skipped = 0;
+                        while (skipped < start) {
+                            long s = fis.skip(start - skipped);
+                            if (s <= 0) break;
+                            skipped += s;
+                        }
+                    }
+                    Response res = newFixedLengthResponse(Status.PARTIAL_CONTENT, mimeType, fis, contentLength);
+                    res.addHeader("Content-Range", "bytes " + start + "-" + end + "/" + fileLength);
+                    res.addHeader("Accept-Ranges", "bytes");
+                    res.addHeader("Content-Length", String.valueOf(contentLength));
+                    res.addHeader("Content-Disposition", "attachment; filename=\"" + file.getName() + "\"");
+                    return res;
+                } else {
+                    Response res = newFixedLengthResponse(Status.RANGE_NOT_SATISFIABLE, "text/plain", "Requested Range Not Satisfiable");
+                    res.addHeader("Content-Range", "bytes */" + fileLength);
+                    return res;
+                }
+            }
+
             FileInputStream fis = new FileInputStream(file);
-            Response res = newFixedLengthResponse(Status.OK, StorageHelper.getMimeType(file.getName()), fis, file.length());
+            Response res = newFixedLengthResponse(Status.OK, mimeType, fis, fileLength);
+            res.addHeader("Accept-Ranges", "bytes");
+            res.addHeader("Content-Length", String.valueOf(fileLength));
             res.addHeader("Content-Disposition", "attachment; filename=\"" + file.getName() + "\"");
             return res;
         } catch (Exception e) {
