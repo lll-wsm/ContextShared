@@ -98,7 +98,7 @@
                             android:id="@+id/ivStatusDot"
                             android:layout_width="16dp"
                             android:layout_height="16dp"
-                            android:src="@drawable/ic_launcher_foreground"
+                            android:src="@mipmap/ic_launcher_foreground"
                             android:background="@color/status_gray_bg"
                             android:layout_marginEnd="10dp" />
 

@@ -15,8 +15,6 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
     
-    <color name="ic_launcher_background">#30C978</color>
-    
     <!-- UI Elements -->
     <color name="bg_page">#F8FAFC</color>
     <color name="bg_card">#FFFFFF</color>
