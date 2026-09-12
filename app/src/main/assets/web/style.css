@@ -89,3 +89,16 @@ textarea { width: 100%; height: 100px; padding: 0.75rem; border: 1px solid var(-
 .drag-overlay.active { display: grid; }
 .drag-overlay-content { text-align: center; }
 .drag-icon { font-size: 5rem; }
+
+/* ---- 手机文件库：目录浏览 ---- */
+.perm-banner { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; padding: 0.6rem 0.75rem; margin-bottom: 0.75rem; border: 1px solid #e8a33d; background: rgba(232, 163, 61, 0.08); border-radius: 8px; font-size: 0.85rem; color: var(--text-main); }
+.perm-banner .btn { margin-left: auto; }
+.perm-banner-hint { width: 100%; font-size: 0.8rem; color: var(--text-muted); }
+.path-bar { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem; flex-wrap: wrap; }
+.breadcrumb { flex: 1; min-width: 0; display: flex; align-items: center; flex-wrap: wrap; gap: 0.15rem; font-size: 0.85rem; overflow-wrap: anywhere; }
+.breadcrumb .crumb { background: transparent; border: none; color: var(--primary); cursor: pointer; padding: 0.15rem 0.35rem; border-radius: 4px; font-size: 0.85rem; }
+.breadcrumb .crumb:hover { background: rgba(37, 99, 235, 0.08); }
+.breadcrumb .sep { color: var(--text-muted); }
+.file-card.dir { cursor: pointer; }
+.file-card.dir:hover { border-color: var(--primary); background: rgba(37, 99, 235, 0.04); }
+.file-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

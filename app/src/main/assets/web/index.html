@@ -37,7 +37,7 @@
                 <div class="card-body">
                     <div class="latest-clip-box" id="latestClipBox">
                         <div class="clip-label" data-i18n="phoneRecentClip">手机端最近复制：</div>
-                        <div class="clip-content" id="phoneClipContent">暂无复制内容</div>
+                        <div class="clip-content" id="phoneClipContent">暂无内容 · 在手机上复制后切回本 App 即可同步</div>
                         <button class="btn btn-secondary btn-sm" id="btnCopyPhoneClip" data-i18n="copyToPc">复制到电脑</button>
                     </div>
 
@@ -73,13 +73,21 @@
         <section class="card files-section">
             <div class="card-header">
                 <h2 data-i18n="phoneFilesTitle">📂 手机文件库</h2>
-                <div class="tab-group">
-                    <button class="tab-btn active" data-category="downloads" data-i18n="tabDownloads">📥 下载/共享</button>
-                    <button class="tab-btn" data-category="photos" data-i18n="tabPhotos">🖼 照片/相册</button>
-                    <button class="tab-btn" data-category="documents" data-i18n="tabDocuments">📑 文档</button>
-                </div>
+                <span class="badge" id="volumeTag" data-i18n="volumeInternal">内部存储</span>
             </div>
             <div class="card-body">
+                <div class="perm-banner" id="permBanner" style="display: none;">
+                    <span data-i18n="permBannerText">未授予「所有文件访问权限」，当前只能看到媒体文件和共享目录</span>
+                    <button class="btn btn-primary btn-sm" id="btnGrantAccess" data-i18n="grantAccess">去手机授权</button>
+                    <span class="perm-banner-hint" id="permGrantHint"></span>
+                </div>
+                <div class="path-bar">
+                    <button class="btn btn-secondary btn-sm" id="btnStorage" data-i18n="storageBtn">存储</button>
+                    <button class="btn btn-secondary btn-sm" id="btnGoUp" title="上级目录">⬆</button>
+                    <div class="breadcrumb" id="breadcrumb"></div>
+                    <button class="btn btn-secondary btn-sm" id="btnRefreshDir" data-i18n="refreshDir">刷新</button>
+                    <button class="btn btn-primary btn-sm" id="btnUploadHere" data-i18n="uploadHere">上传到此目录</button>
+                </div>
                 <div class="file-grid" id="fileGrid">
                     <div class="loading-spinner" data-i18n="loading">加载中...</div>
                 </div>

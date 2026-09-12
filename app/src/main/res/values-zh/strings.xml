@@ -30,6 +30,12 @@
     
     <string name="permissions_granted">权限已授予</string>
     <string name="permissions_partially_denied">部分权限未授予，可能影响文件和通知功能</string>
+
+    <string name="file_access_granted">已获得「所有文件访问权限」</string>
+    <string name="file_access_denied">受限：仅媒体与共享目录</string>
+    <string name="grant_file_access">去授权</string>
+    <string name="file_access_granted_toast">已获得所有文件访问权限</string>
+    <string name="file_access_hint">开启「所有文件访问权限」后，网页端才能浏览并管理整个手机存储；否则只能看到媒体文件和共享目录。</string>
     
     <string name="service_notification_title">内容共享 互联服务运行中</string>
     <string name="service_notification_content">服务已就绪: %s</string>

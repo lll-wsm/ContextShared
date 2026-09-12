@@ -158,6 +158,36 @@
                         android:textColor="@color/brand_primary"
                         android:padding="0dp" />
                 </LinearLayout>
+
+                <!-- 所有文件访问权限状态（Android 11+） -->
+                <LinearLayout
+                    android:id="@+id/layoutFileAccessBar"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginTop="4dp"
+                    android:visibility="gone">
+
+                    <TextView
+                        android:id="@+id/tvFileAccess"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="@string/file_access_denied"
+                        android:textColor="@color/text_sub"
+                        android:textSize="12sp" />
+
+                    <Button
+                        android:id="@+id/btnGrantFileAccess"
+                        style="@style/Widget.MaterialComponents.Button.TextButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="36dp"
+                        android:text="@string/grant_file_access"
+                        android:textSize="12sp"
+                        android:textColor="@color/brand_primary"
+                        android:padding="0dp" />
+                </LinearLayout>
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 

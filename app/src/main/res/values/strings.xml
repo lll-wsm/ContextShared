@@ -30,6 +30,12 @@
     
     <string name="permissions_granted">Permissions granted</string>
     <string name="permissions_partially_denied">Some permissions were not granted, file and notification features may be affected</string>
+
+    <string name="file_access_granted">All files access granted</string>
+    <string name="file_access_denied">Limited: media + shared folder only</string>
+    <string name="grant_file_access">Grant</string>
+    <string name="file_access_granted_toast">All files access granted</string>
+    <string name="file_access_hint">Grant \"All files access\" so the web page can browse and manage the whole phone storage. Without it only media files and the shared folder are visible.</string>
     
     <string name="service_notification_title">ContextShared Service Running</string>
     <string name="service_notification_content">Server ready: %s</string>

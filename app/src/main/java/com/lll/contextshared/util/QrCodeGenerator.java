@@ -9,16 +9,30 @@ import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
 import android.graphics.RectF;
 
-import com.google.zxing.BarcodeFormat;
 import com.google.zxing.EncodeHintType;
-import com.google.zxing.common.BitMatrix;
-import com.google.zxing.qrcode.QRCodeWriter;
 import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel;
+import com.google.zxing.qrcode.encoder.ByteMatrix;
+import com.google.zxing.qrcode.encoder.Encoder;
+import com.google.zxing.qrcode.encoder.QRCode;
 
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * 二维码生成。
+ *
+ * <p>旧实现用 {@code QRCodeWriter.encode(..., 450, 450)}：ZXing 会把矩阵<b>放大到 450×450 像素</b>，
+ * 于是绘制循环要跑 450×450 = 202,500 次、并对约 10 万个像素逐个调用带抗锯齿的
+ * {@code canvas.drawRect(1×1)}。这段代码跑在主线程（{@code onServerStarted} → {@code runOnUiThread}），
+ * 每次绑定服务都会重算，直接造成界面卡顿。
+ *
+ * <p>现在改为：取未放大的模块矩阵（每个元素 = 1 个模块），一次性写进像素数组建小位图，
+ * 再用一次 {@code drawBitmap} 放大到目标尺寸（关闭双线性过滤以保持锐利），绘制调用从十万级降到个位数。
+ */
 public class QrCodeGenerator {
+
+    private static final int QUIET_ZONE_MODULES = 2;
+    private static final int DARK_COLOR = Color.parseColor("#0F172A");
 
     public static Bitmap generateQrCodeBitmap(String content, int width, int height) {
         return generateBrandedQrCodeBitmap(content, width, height, null);
@@ -28,48 +42,59 @@ public class QrCodeGenerator {
         try {
             Map<EncodeHintType, Object> hints = new HashMap<>();
             hints.put(EncodeHintType.CHARACTER_SET, "UTF-8");
-            hints.put(EncodeHintType.ERROR_CORRECTION, ErrorCorrectionLevel.H);
-            hints.put(EncodeHintType.MARGIN, 1);
 
-            QRCodeWriter writer = new QRCodeWriter();
-            BitMatrix bitMatrix = writer.encode(content, BarcodeFormat.QR_CODE, width, height, hints);
+            QRCode code = Encoder.encode(content, ErrorCorrectionLevel.H, hints);
+            ByteMatrix matrix = code.getMatrix();
+            if (matrix == null) {
+                return null;
+            }
 
-            int matrixWidth = bitMatrix.getWidth();
-            int matrixHeight = bitMatrix.getHeight();
+            int modules = matrix.getWidth();
+            int totalModules = modules + QUIET_ZONE_MODULES * 2;
+            int target = Math.max(width, height);
+            int multiple = Math.max(1, target / totalModules);
+            int outputSize = totalModules * multiple;
+            int offset = QUIET_ZONE_MODULES * multiple;
 
-            Bitmap qrBitmap = Bitmap.createBitmap(matrixWidth, matrixHeight, Bitmap.Config.ARGB_8888);
-            Canvas canvas = new Canvas(qrBitmap);
-            canvas.drawColor(Color.WHITE);
-
-            Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
-            paint.setColor(Color.parseColor("#0F172A"));
-
-            // 绘制精美的圆角矩阵像素
-            for (int y = 0; y < matrixHeight; y++) {
-                for (int x = 0; x < matrixWidth; x++) {
-                    if (bitMatrix.get(x, y)) {
-                        canvas.drawRect(x, y, x + 1, y + 1, paint);
+            // 1. 按模块写像素（每个模块写 multiple×multiple 个像素，一次内存操作）
+            int[] pixels = new int[outputSize * outputSize];
+            java.util.Arrays.fill(pixels, Color.WHITE);
+            for (int y = 0; y < matrix.getHeight(); y++) {
+                int rowStart = (offset + y * multiple) * outputSize + offset;
+                for (int x = 0; x < modules; x++) {
+                    if (matrix.get(x, y) != 1) {
+                        continue;
+                    }
+                    int cellStart = rowStart + x * multiple;
+                    for (int dy = 0; dy < multiple; dy++) {
+                        int base = cellStart + dy * outputSize;
+                        for (int dx = 0; dx < multiple; dx++) {
+                            pixels[base + dx] = DARK_COLOR;
+                        }
                     }
                 }
             }
 
-            // 如果提供了 Logo，在中心绘制品牌徽章 (Overlay central rounded logo badge)
-            if (logo != null) {
-                int logoSize = (int) (matrixWidth * 0.22);
-                int logoLeft = (matrixWidth - logoSize) / 2;
-                int logoTop = (matrixHeight - logoSize) / 2;
+            Bitmap qrBitmap = Bitmap.createBitmap(outputSize, outputSize, Bitmap.Config.ARGB_8888);
+            qrBitmap.setPixels(pixels, 0, outputSize, 0, 0, outputSize, outputSize);
 
-                // 绘制 Logo 底部的白色圆角卡片
+            // 2. 中心品牌徽章
+            if (logo != null) {
+                Canvas canvas = new Canvas(qrBitmap);
+                int logoSize = (int) (outputSize * 0.22);
+                int logoLeft = (outputSize - logoSize) / 2;
+                int logoTop = (outputSize - logoSize) / 2;
+
                 Paint badgeBgPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
                 badgeBgPaint.setColor(Color.WHITE);
                 RectF badgeRect = new RectF(logoLeft - 4, logoTop - 4, logoLeft + logoSize + 4, logoTop + logoSize + 4);
                 canvas.drawRoundRect(badgeRect, 10, 10, badgeBgPaint);
 
-                // 绘制圆角 Logo
                 Bitmap roundedLogo = getRoundedCornerBitmap(logo, 16);
                 Rect srcRect = new Rect(0, 0, roundedLogo.getWidth(), roundedLogo.getHeight());
                 Rect destRect = new Rect(logoLeft, logoTop, logoLeft + logoSize, logoTop + logoSize);
-                canvas.drawBitmap(roundedLogo, srcRect, destRect, null);
+                Paint logoPaint = new Paint(Paint.FILTER_BITMAP_FLAG);
+                canvas.drawBitmap(roundedLogo, srcRect, destRect, logoPaint);
             }
 
             return qrBitmap;

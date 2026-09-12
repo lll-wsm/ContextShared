@@ -16,6 +16,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.net.Uri;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Build;
@@ -45,6 +46,7 @@ import com.lll.contextshared.server.ServerManager;
 import com.lll.contextshared.service.WebService;
 import com.lll.contextshared.util.NetworkUtils;
 import com.lll.contextshared.util.QrCodeGenerator;
+import com.lll.contextshared.util.StorageHelper;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -72,11 +74,24 @@ public class MainActivity extends AppCompatActivity implements ServerManager.Ser
     private Button btnRefreshPin;
     private TextView tvLogs;
     private Button btnClearLogs;
+    private View layoutFileAccessBar;
+    private TextView tvFileAccess;
+    private Button btnGrantFileAccess;
 
     private WebService webService;
     private boolean isBound = false;
+    /** 窗口是否已获得焦点：只有此时系统才允许读取剪贴板 */
+    private boolean windowFocused = false;
+    /**
+     * 窗口焦点与系统内部的 isUidFocused 之间存在毫秒级时间差，单次读取经常被判"未聚焦"而拒绝；
+     * 所以拿到焦点后错开时间重试几次（内容相同会被去重，不会重复推送）。
+     */
+    private static final int[] CLIPBOARD_POLL_DELAYS_MS = {0, 400, 1200, 2500};
+    private final android.os.Handler uiHandler =
+            new android.os.Handler(android.os.Looper.getMainLooper());
     private ObjectAnimator pulseAnimator;
     private Bitmap currentQrBitmap;
+    private String currentQrUrl;
 
     private final SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm:ss", Locale.getDefault());
 
@@ -88,6 +103,8 @@ public class MainActivity extends AppCompatActivity implements ServerManager.Ser
             isBound = true;
             webService.getServerManager().setStateListener(MainActivity.this);
             updateUiState(false);
+            // 服务刚连上时如果窗口已经聚焦，也同步一次剪贴板
+            pollClipboardIfFocused();
         }
 
         @Override
@@ -130,11 +147,22 @@ public class MainActivity extends AppCompatActivity implements ServerManager.Ser
         btnClearLogs = findViewById(R.id.btnClearLogs);
         tvLogs.setMovementMethod(new ScrollingMovementMethod());
 
+        layoutFileAccessBar = findViewById(R.id.layoutFileAccessBar);
+        tvFileAccess = findViewById(R.id.tvFileAccess);
+        btnGrantFileAccess = findViewById(R.id.btnGrantFileAccess);
+        btnGrantFileAccess.setOnClickListener(v -> {
+            v.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY);
+            openAllFilesAccessSettings();
+        });
+
         // 服务开关监听
         switchServer.setOnCheckedChangeListener((buttonView, isChecked) -> {
             buttonView.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY);
             if (isChecked) {
                 startWebService();
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && !StorageHelper.hasAllFilesAccess()) {
+                    Toast.makeText(this, getString(R.string.file_access_hint), Toast.LENGTH_LONG).show();
+                }
             } else {
                 stopWebService();
             }
@@ -204,6 +232,72 @@ public class MainActivity extends AppCompatActivity implements ServerManager.Ser
         });
 
         updateNetworkInfo();
+        updateFileAccessState();
+    }
+
+    /** 刷新「所有文件访问权限」状态（从设置页返回时也会重新检查）。 */
+    private void updateFileAccessState() {
+        if (layoutFileAccessBar == null) return;
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+            layoutFileAccessBar.setVisibility(View.GONE);
+            return;
+        }
+        boolean granted = StorageHelper.hasAllFilesAccess();
+        layoutFileAccessBar.setVisibility(View.VISIBLE);
+        tvFileAccess.setText(granted ? getString(R.string.file_access_granted) : getString(R.string.file_access_denied));
+        tvFileAccess.setTextColor(granted ? Color.parseColor("#30C978") : Color.parseColor("#E8A33D"));
+        btnGrantFileAccess.setVisibility(granted ? View.GONE : View.VISIBLE);
+    }
+
+    private void openAllFilesAccessSettings() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) return;
+        try {
+            Intent intent = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION,
+                    Uri.parse("package:" + getPackageName()));
+            startActivity(intent);
+        } catch (Exception e) {
+            try {
+                startActivity(new Intent(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION));
+            } catch (Exception ex) {
+                Toast.makeText(this, getString(R.string.file_access_hint), Toast.LENGTH_LONG).show();
+            }
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        updateFileAccessState();
+        pollClipboardIfFocused();
+    }
+
+    /**
+     * 窗口获得焦点时才读剪贴板。
+     *
+     * <p>Android 10+ 规定：应用不在前台/没有焦点时读剪贴板会被系统拒绝
+     * （日志：{@code ClipboardService: Denying clipboard access to <pkg>, application is not in focus}）。
+     * 实测 {@code onResume} 会早于窗口获得焦点，在那里读仍会被拒，因此改用此回调：
+     * 用户在其他应用里复制内容后切回本应用 → 窗口获得焦点瞬间同步一次到网页。
+     */
+    @Override
+    public void onWindowFocusChanged(boolean hasFocus) {
+        super.onWindowFocusChanged(hasFocus);
+        windowFocused = hasFocus;
+        if (hasFocus) {
+            pollClipboardIfFocused();
+        }
+    }
+
+    private void pollClipboardIfFocused() {
+        for (int delay : CLIPBOARD_POLL_DELAYS_MS) {
+            uiHandler.postDelayed(this::pollClipboardOnce, delay);
+        }
+    }
+
+    private void pollClipboardOnce() {
+        if (!windowFocused) return;
+        if (webService == null || webService.getServerManager() == null) return;
+        webService.getServerManager().pollClipboardNow();
     }
 
     private void updateNetworkInfo() {
@@ -337,7 +431,7 @@ public class MainActivity extends AppCompatActivity implements ServerManager.Ser
         if (running) {
             String ip = NetworkUtils.getLocalIpAddress(this);
             int port = webService.getServerManager().getHttpPort();
-            onServerStarted(ip, port, port + 1);
+            onServerStarted(ip, port, port);
         } else {
             onServerStopped();
         }
@@ -360,7 +454,11 @@ public class MainActivity extends AppCompatActivity implements ServerManager.Ser
             }
 
             Bitmap logo = BitmapFactory.decodeResource(getResources(), R.mipmap.ic_launcher);
-            currentQrBitmap = QrCodeGenerator.generateBrandedQrCodeBitmap(url, 450, 450, logo);
+            // 只在地址变化时重建二维码：onServerStarted 会在每次绑定服务时被调用
+            if (!url.equals(currentQrUrl) || currentQrBitmap == null) {
+                currentQrBitmap = QrCodeGenerator.generateBrandedQrCodeBitmap(url, 450, 450, logo);
+                currentQrUrl = url;
+            }
             if (currentQrBitmap != null) {
                 ivQrCode.setImageBitmap(currentQrBitmap);
             }
@@ -397,6 +495,7 @@ public class MainActivity extends AppCompatActivity implements ServerManager.Ser
 
     @Override
     protected void onDestroy() {
+        uiHandler.removeCallbacksAndMessages(null);
         stopPulseAnimation();
         if (isBound) {
             if (webService != null && webService.getServerManager() != null) {

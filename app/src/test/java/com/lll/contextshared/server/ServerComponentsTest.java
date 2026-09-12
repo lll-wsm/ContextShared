@@ -8,12 +8,13 @@ import com.lll.contextshared.model.WsMessage;
 
 public class ServerComponentsTest {
     private SessionManager sessionManager;
-    private AppWebSocketServer wsServer;
+    private AppHttpServer wsServer;
 
     @Before
     public void setUp() {
         sessionManager = new SessionManager();
-        wsServer = new AppWebSocketServer(9090, sessionManager);
+        // 单端口服务器：HTTP 与 WebSocket 由同一个 AppHttpServer 承载
+        wsServer = new AppHttpServer(null, 9090, sessionManager);
     }
 
     @Test
@@ -46,7 +47,7 @@ public class ServerComponentsTest {
                 (proxy, method, args) -> "getParms".equals(method.getName()) ? invalidParms : null
         );
 
-        AppWebSocketServer.ContextWebSocket unauthClient = (AppWebSocketServer.ContextWebSocket) wsServer.openWebSocket(invalidSession);
+        AppHttpServer.ContextWebSocket unauthClient = (AppHttpServer.ContextWebSocket) wsServer.openWebSocket(invalidSession);
         assertFalse(unauthClient.isAuthenticated());
 
         final boolean[] received = {false};
@@ -70,7 +71,7 @@ public class ServerComponentsTest {
                 (proxy, method, args) -> "getParms".equals(method.getName()) ? validParms : null
         );
 
-        AppWebSocketServer.ContextWebSocket authClient = (AppWebSocketServer.ContextWebSocket) wsServer.openWebSocket(validSession);
+        AppHttpServer.ContextWebSocket authClient = (AppHttpServer.ContextWebSocket) wsServer.openWebSocket(validSession);
         assertTrue(authClient.isAuthenticated());
 
         // Send CLIPBOARD_SEND from authenticated client
