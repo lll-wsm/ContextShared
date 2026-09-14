@@ -81,19 +81,66 @@
                     <button class="btn btn-primary btn-sm" id="btnGrantAccess" data-i18n="grantAccess">去手机授权</button>
                     <span class="perm-banner-hint" id="permGrantHint"></span>
                 </div>
+                <!-- 导航条 -->
                 <div class="path-bar">
                     <button class="btn btn-secondary btn-sm" id="btnStorage" data-i18n="storageBtn">存储</button>
                     <button class="btn btn-secondary btn-sm" id="btnGoUp" title="上级目录">⬆</button>
                     <div class="breadcrumb" id="breadcrumb"></div>
+                    <button class="btn btn-secondary btn-sm" id="btnToggleView">☰ 列表</button>
+                </div>
+
+                <!-- 工具条：筛选 / 排序 / 搜索 / 上传 -->
+                <div class="tool-bar">
+                    <input type="text" id="filterInput" class="mini-input" data-i18n-placeholder="filterPlaceholder" placeholder="筛选当前目录…">
+                    <select id="sortSelect" class="mini-input" title="排序方式">
+                        <option value="name" data-i18n="sortName">名称</option>
+                        <option value="size" data-i18n="sortSize">大小</option>
+                        <option value="time" data-i18n="sortTime">修改时间</option>
+                    </select>
+                    <button class="btn btn-secondary btn-sm" id="btnSortDir" title="升序/降序">↑</button>
+                    <span class="tool-spacer"></span>
+                    <button class="btn btn-secondary btn-sm" id="btnSearchToggle" data-i18n="searchBtn">🔍 搜索</button>
                     <button class="btn btn-secondary btn-sm" id="btnRefreshDir" data-i18n="refreshDir">刷新</button>
+                    <button class="btn btn-secondary btn-sm" id="btnUploadDir" data-i18n="uploadFolder">上传文件夹</button>
                     <button class="btn btn-primary btn-sm" id="btnUploadHere" data-i18n="uploadHere">上传到此目录</button>
                 </div>
-                <div class="file-grid" id="fileGrid">
+
+                <!-- 搜索条（点🔍后展开） -->
+                <div class="tool-bar" id="searchBar" style="display: none;">
+                    <input type="text" id="searchInput" class="mini-input grow" data-i18n-placeholder="searchPlaceholder" placeholder="在当前目录及子目录里搜文件名…">
+                    <button class="btn btn-primary btn-sm" id="btnSearchGo" data-i18n="searchGo">开始搜索</button>
+                    <button class="btn btn-secondary btn-sm" id="btnSearchExit" data-i18n="searchExit">退出搜索</button>
+                    <span class="perm-banner-hint" id="searchHint"></span>
+                </div>
+
+                <!-- 多选 / 批量操作条 -->
+                <div class="batch-bar" id="batchBar">
+                    <label class="check-label"><input type="checkbox" id="selectAll"> <span data-i18n="selectAll">全选</span></label>
+                    <span class="batch-count" id="selectedCount" data-i18n="selectedNone">已选 0 项</span>
+                    <button class="btn btn-primary btn-sm" id="btnBatchDownload" data-i18n="downloadSelected">下载选中</button>
+                    <button class="btn btn-secondary btn-sm" id="btnBatchZip" data-i18n="zipSelected">打包 ZIP</button>
+                    <button class="btn btn-secondary btn-sm" id="btnClearSelection" data-i18n="clearSelection">取消选择</button>
+                    <span class="perm-banner-hint" id="batchHint"></span>
+                </div>
+
+                <input type="file" id="dirInput" webkitdirectory directory multiple style="display: none;">
+
+                <div class="file-grid list" id="fileGrid">
                     <div class="loading-spinner" data-i18n="loading">加载中...</div>
                 </div>
             </div>
         </section>
     </main>
+
+    <!-- 预览遮罩（图片 / 视频 / 音频 / PDF） -->
+    <div class="preview-overlay" id="previewOverlay" style="display: none;">
+        <div class="preview-head">
+            <span class="preview-name" id="previewName"></span>
+            <a class="btn btn-secondary btn-sm" id="previewDownload" data-i18n="download">下载</a>
+            <button class="btn btn-primary btn-sm" id="previewClose">✕</button>
+        </div>
+        <div class="preview-body" id="previewBody"></div>
+    </div>
 
     <!-- PIN 码配对弹窗 -->
     <div class="modal-overlay" id="pinModal">

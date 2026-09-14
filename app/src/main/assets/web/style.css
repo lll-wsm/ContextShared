@@ -102,3 +102,39 @@ textarea { width: 100%; height: 100px; padding: 0.75rem; border: 1px solid var(-
 .file-card.dir { cursor: pointer; }
 .file-card.dir:hover { border-color: var(--primary); background: rgba(37, 99, 235, 0.04); }
 .file-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* ---- 文件列表视图（一行一项，默认）---- */
+.file-grid.list { display: flex; flex-direction: column; gap: 4px; }
+.file-row { display: flex; align-items: center; gap: 0.6rem; padding: 0.45rem 0.6rem; border: 1px solid var(--border); border-radius: 8px; background: var(--bg-main); font-size: 0.85rem; }
+.file-row:hover { border-color: var(--border); background: var(--bg-card); }
+.file-row.entry-dir { cursor: pointer; }
+.file-row.entry-dir:hover { border-color: var(--primary); background: rgba(37, 99, 235, 0.04); }
+.file-row-icon { flex: 0 0 auto; font-size: 0.95rem; }
+.file-row-name { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.file-row-meta { flex: 0 0 auto; min-width: 76px; text-align: right; color: var(--text-muted); font-size: 0.78rem; }
+.file-row-date { flex: 0 0 auto; min-width: 84px; text-align: right; color: var(--text-muted); font-size: 0.76rem; }
+.file-row .btn { flex: 0 0 auto; }
+@media (max-width: 720px) { .file-row-date { display: none; } }
+
+/* ---- 文件库工具条 / 批量操作 / 预览 ---- */
+.tool-bar { display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap; margin-bottom: 0.6rem; }
+.tool-spacer { flex: 1 1 auto; }
+.mini-input { border: 1px solid var(--border); border-radius: 6px; padding: 0.3rem 0.5rem; font-size: 0.82rem; background: var(--bg-card); color: var(--text-main); max-width: 190px; }
+.mini-input.grow { flex: 1 1 220px; max-width: none; }
+.mini-input:focus { outline: none; border-color: var(--primary); }
+.batch-bar { display: none; align-items: center; gap: 0.6rem; flex-wrap: wrap; padding: 0.45rem 0.6rem; margin-bottom: 0.6rem; border: 1px solid var(--border); border-radius: 8px; background: var(--bg-card); font-size: 0.83rem; }
+.batch-bar.active { display: flex; }
+.batch-count { color: var(--text-muted); }
+.check-label { display: inline-flex; align-items: center; gap: 0.35rem; cursor: pointer; user-select: none; }
+.file-row input[type="checkbox"], .file-card input[type="checkbox"] { flex: 0 0 auto; width: 15px; height: 15px; cursor: pointer; }
+.file-row.selected, .file-card.selected { border-color: var(--primary); background: rgba(37, 99, 235, 0.07); }
+.row-actions { display: inline-flex; align-items: center; gap: 0.25rem; flex: 0 0 auto; }
+.icon-btn { border: none; background: transparent; cursor: pointer; font-size: 0.95rem; padding: 0.15rem 0.3rem; border-radius: 5px; color: var(--text-main); }
+.icon-btn:hover { background: rgba(37, 99, 235, 0.1); }
+.preview-overlay { position: fixed; inset: 0; z-index: 50; background: rgba(15, 23, 42, 0.88); display: flex; flex-direction: column; }
+.preview-head { display: flex; align-items: center; gap: 0.6rem; padding: 0.6rem 0.9rem; color: #fff; }
+.preview-name { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 0.9rem; }
+.preview-body { flex: 1 1 auto; min-height: 0; display: flex; align-items: center; justify-content: center; padding: 0 0.9rem 0.9rem; }
+.preview-body img, .preview-body video { max-width: 100%; max-height: 100%; object-fit: contain; }
+.preview-body iframe { width: 100%; height: 100%; border: none; background: #fff; border-radius: 8px; }
+.preview-body audio { width: min(560px, 100%); }

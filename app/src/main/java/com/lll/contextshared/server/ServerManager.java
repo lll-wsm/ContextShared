@@ -157,6 +157,13 @@ public class ServerManager {
         }
     }
 
+    /** 把一条消息写进手机端的“传输动态”列表。 */
+    public void logToListener(String message) {
+        if (stateListener != null && message != null) {
+            stateListener.onLog(message);
+        }
+    }
+
     public void broadcastDeviceStatus(final DeviceInfo info) {
         ExecutorService executor = broadcastExecutor;
         if (server == null || !isRunning || executor == null) {

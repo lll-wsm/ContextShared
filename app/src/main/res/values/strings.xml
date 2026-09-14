@@ -35,6 +35,12 @@
     <string name="file_access_denied">Limited: media + shared folder only</string>
     <string name="grant_file_access">Grant</string>
     <string name="file_access_granted_toast">All files access granted</string>
+
+    <string name="saf_granted">Access granted for the restricted folder</string>
+    <string name="saf_grant_failed">Authorization failed (write permission may be missing)</string>
+    <string name="saf_cancelled">Authorization cancelled</string>
+    <string name="saf_launch_failed">Could not open the system folder picker</string>
+    <string name="saf_unsupported">This Android version no longer allows third-party apps to access that folder</string>
     <string name="file_access_hint">Grant \"All files access\" so the web page can browse and manage the whole phone storage. Without it only media files and the shared folder are visible.</string>
     
     <string name="service_notification_title">ContextShared Service Running</string>

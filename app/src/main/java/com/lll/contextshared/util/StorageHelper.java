@@ -422,6 +422,27 @@ public class StorageHelper {
         return base;
     }
 
+    /**
+     * 清洗上传时携带的相对目录（拖入整个文件夹时用）。
+     *
+     * <p>逐段用 {@link #sanitizeFileName} 处理，过滤空段、{@code .}、{@code ..}，
+     * 因此不可能通过 {@code ../../} 跳出目标目录。无有效段时返回 null。
+     */
+    public static String sanitizeRelativePath(String rawPath) {
+        if (rawPath == null) return null;
+        String normalized = rawPath.replace('\\', '/');
+        String[] segments = normalized.split("/");
+        StringBuilder sb = new StringBuilder();
+        for (String segment : segments) {
+            String safe = sanitizeFileName(segment);
+            if (safe == null) continue;
+            if (sb.length() > 0) sb.append('/');
+            sb.append(safe);
+            if (sb.length() > 400) break;
+        }
+        return sb.length() == 0 ? null : sb.toString();
+    }
+
     /** 目录里已有同名文件时自动加 " (1)"、" (2)" 后缀，避免覆盖用户文件。 */
     public static File buildUploadTarget(File dir, String fileName) {
         File direct = new File(dir, fileName);
@@ -445,21 +466,22 @@ public class StorageHelper {
     // ------------------------------------------------------------------
 
     /**
-     * 列出目录内容：隐藏文件与 Android/data|obb 跳过，目录优先、再按名称不区分大小写排序。
+     * 列出目录内容：隐藏文件跳过，目录优先、再按名称不区分大小写排序。
+     *
+     * <p>注意：{@code Android/data} 与 {@code Android/obb} 会照常列出（用 File 只能 stat 到它们本身，
+     * 读不到子项），用户点进去时由上层通过 SAF 授权流程处理；不再静默隐藏，避免"目录不见了"的困惑。
      */
     public static List<FileItem> listDirectory(File dir) {
         List<FileItem> list = new ArrayList<>();
         if (dir == null || !dir.isDirectory()) {
             return list;
         }
-        File volumeRoot = findVolumeRoot(dir);
         File[] children = dir.listFiles();
         if (children == null) {
             return list;
         }
         for (File f : children) {
             if (f.isHidden()) continue;
-            if (volumeRoot != null && isRestrictedSystemPath(f, volumeRoot)) continue;
             boolean isDir = f.isDirectory();
             list.add(new FileItem(
                     f.getName(),

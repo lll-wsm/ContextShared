@@ -17,6 +17,7 @@ import android.graphics.Color;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
+import android.provider.DocumentsContract;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Build;
@@ -35,6 +36,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
@@ -46,6 +49,7 @@ import com.lll.contextshared.server.ServerManager;
 import com.lll.contextshared.service.WebService;
 import com.lll.contextshared.util.NetworkUtils;
 import com.lll.contextshared.util.QrCodeGenerator;
+import com.lll.contextshared.util.SafDocuments;
 import com.lll.contextshared.util.StorageHelper;
 
 import java.text.SimpleDateFormat;
@@ -87,8 +91,15 @@ public class MainActivity extends AppCompatActivity implements ServerManager.Ser
      * 所以拿到焦点后错开时间重试几次（内容相同会被去重，不会重复推送）。
      */
     private static final int[] CLIPBOARD_POLL_DELAYS_MS = {0, 400, 1200, 2500};
+    /** SAF 里内部共享存储的卷标识。 */
+    private static final String SAF_PRIMARY_VOLUME_ID = "primary";
     private final android.os.Handler uiHandler =
             new android.os.Handler(android.os.Looper.getMainLooper());
+
+    /** SAF 目录授权（Android/data、Android/obb）结果回调。 */
+    private final ActivityResultLauncher<Intent> safAccessLauncher =
+            registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
+                    result -> onSafAccessResult(result));
     private ObjectAnimator pulseAnimator;
     private Bitmap currentQrBitmap;
     private String currentQrUrl;
@@ -269,6 +280,54 @@ public class MainActivity extends AppCompatActivity implements ServerManager.Ser
         super.onResume();
         updateFileAccessState();
         pollClipboardIfFocused();
+        maybeLaunchSafAccessRequest();
+    }
+
+    /**
+     * 网页端点了“在手机上授权”后，在前台弹出系统文件选择器。
+     *
+     * <p>Android 11 起 {@code Android/data}、{@code Android/obb} 不在「所有文件访问权限」范围内
+     * （官方文档明确排除），只能通过 SAF 让用户手动授权。选择器本身禁止选中这些目录，
+     * 把 {@link DocumentsContract#EXTRA_INITIAL_URI} 指向目标目录，用户就能在该目录下点
+     * “使用此文件夹”完成授权（Android 11/12 有效；Android 13 已堵掉）。
+     */
+    private void maybeLaunchSafAccessRequest() {
+        String target = SafDocuments.consumePendingTarget();
+        if (target == null) {
+            return;
+        }
+        if (!SafDocuments.isSupported()) {
+            Toast.makeText(this, R.string.saf_unsupported, Toast.LENGTH_LONG).show();
+            return;
+        }
+        try {
+            Uri initial = DocumentsContract.buildDocumentUri(
+                    "com.android.externalstorage.documents", SAF_PRIMARY_VOLUME_ID + ":Android/" + target);
+            Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
+                    .putExtra(DocumentsContract.EXTRA_INITIAL_URI, initial)
+                    .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION
+                            | Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+                            | Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION
+                            | Intent.FLAG_GRANT_PREFIX_URI_PERMISSION);
+            safAccessLauncher.launch(intent);
+        } catch (Throwable t) {
+            Toast.makeText(this, R.string.saf_launch_failed, Toast.LENGTH_LONG).show();
+        }
+    }
+
+    private void onSafAccessResult(androidx.activity.result.ActivityResult result) {
+        Uri uri = result.getData() != null ? result.getData().getData() : null;
+        String message;
+        if (result.getResultCode() == RESULT_OK && uri != null) {
+            boolean granted = SafDocuments.onTreeGranted(uri);
+            message = granted ? getString(R.string.saf_granted) : getString(R.string.saf_grant_failed);
+        } else {
+            message = getString(R.string.saf_cancelled);
+        }
+        Toast.makeText(this, message, Toast.LENGTH_LONG).show();
+        if (webService != null && webService.getServerManager() != null) {
+            webService.getServerManager().logToListener(message);
+        }
     }
 
     /**

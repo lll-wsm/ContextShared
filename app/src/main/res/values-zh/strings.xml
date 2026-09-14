@@ -35,6 +35,12 @@
     <string name="file_access_denied">受限：仅媒体与共享目录</string>
     <string name="grant_file_access">去授权</string>
     <string name="file_access_granted_toast">已获得所有文件访问权限</string>
+
+    <string name="saf_granted">已授权访问该受限目录</string>
+    <string name="saf_grant_failed">授权失败（可能未获得写入权限）</string>
+    <string name="saf_cancelled">已取消授权</string>
+    <string name="saf_launch_failed">无法打开系统文件夹选择器</string>
+    <string name="saf_unsupported">当前系统版本已不允许第三方应用访问该目录</string>
     <string name="file_access_hint">开启「所有文件访问权限」后，网页端才能浏览并管理整个手机存储；否则只能看到媒体文件和共享目录。</string>
     
     <string name="service_notification_title">内容共享 互联服务运行中</string>

@@ -170,8 +170,11 @@ public class StorageHelperBrowseTest {
         assertEquals("text/plain", items.get(2).getMimeType());
         assertTrue(items.get(2).getPath().startsWith(dir.getAbsolutePath()));
 
-        // Android/data 必须从 Android 目录的列表中隐藏
-        assertTrue(StorageHelper.listDirectory(new File(root, "Android")).isEmpty());
+        // Android/data 现在会照常列出（用 File 只能 stat 到目录本身，读不到子项），
+        // 用户点进去时由上层走 SAF 授权流程；不再静默隐藏，避免“目录不见了”的困惑
+        java.util.List<FileItem> androidItems = StorageHelper.listDirectory(new File(root, "Android"));
+        assertTrue("Android/data 应当出现在 Android 的列表里",
+                androidItems.stream().anyMatch(i -> "data".equals(i.getName())));
     }
 
     @Test
@@ -235,11 +238,12 @@ public class StorageHelperBrowseTest {
             assertTrue(sdData.mkdirs());
             assertTrue(new File(sd, "Music").mkdirs());
 
-            assertNull("外置卷里的 Android/data 也必须挡住",
+            assertNull("外置卷里的 Android/data 也必须挡住（File 通道）",
                     StorageHelper.resolveBrowsableDirectory(sdData.getAbsolutePath()));
             assertNotNull(StorageHelper.resolveBrowsableDirectory(new File(sd, "Music").getAbsolutePath()));
-            assertTrue("Android 目录下 data 应被隐藏",
-                    StorageHelper.listDirectory(new File(sd, "Android")).isEmpty());
+            assertTrue("Android/data 会出现在列表里（由上层引导 SAF 授权）",
+                    StorageHelper.listDirectory(new File(sd, "Android")).stream()
+                            .anyMatch(i -> "data".equals(i.getName())));
         } finally {
             StorageHelper.setBrowseRootForTesting(root);
             deleteRecursively(sd);
